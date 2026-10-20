@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Workflow Dashboard</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --card: #1e293b;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --primary: #10b981;
+        --primary-dark: #0f766e;
+        --border: #334155;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #020617, var(--bg));
+        color: var(--text);
+        min-height: 100vh;
+        padding: 30px;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .panel {
+        background: rgba(17,24,39,0.95);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+      }
+      h1 {
+        margin-top: 0;
+        font-size: 2rem;
+      }
+      .meta {
+        color: var(--muted);
+        margin-bottom: 20px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #020617;
+        color: var(--text);
+        padding: 14px;
+        font-size: 1rem;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 16px;
+        flex-wrap: wrap;
+      }
+      button {
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        background: var(--primary);
+        color: #04130f;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .reply {
+        margin-top: 22px;
+        background: #0b1220;
+        border: 1px solid var(--border);
+        padding: 18px;
+        border-radius: 12px;
+        white-space: pre-wrap;
+        line-height: 1.6;
+        color: #dbeafe;
+      }
+      .status {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="panel">
+        <h1>AI Workflow Dashboard</h1>
+        <div class="meta">Prompt an LLM through n8n + Ollama, powered by Docker.</div>
+
+        <textarea id="prompt">Explain how Docker helps developers and teams work faster.</textarea>
+
+        <div class="actions">
+          <button onclick="sendPrompt()">Ask AI</button>
+          <button class="secondary" onclick="clearReply()">Clear</button>
+        </div>
+
+        <div id="status" class="status">Ready.</div>
+        <div id="reply" class="reply">Your AI response will appear here.</div>
+      </div>
+    </div>
+
+    <script>
+      async function sendPrompt() {
+        const prompt = document.getElementById('prompt').value.trim();
+        const status = document.getElementById('status');
+        const reply = document.getElementById('reply');
+
+        if (!prompt) {
+          status.textContent = 'Please enter a prompt first.';
+          return;
+        }
+
+        status.textContent = 'Sending to AI...';
+        reply.textContent = 'Thinking...';
+
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Request failed');
+          }
+
+          reply.textContent = data.reply || 'No response returned.';
+          status.textContent = 'Response received successfully.';
+        } catch (error) {
+          reply.textContent = 'Error: ' + error.message;
+          status.textContent = 'Request failed.';
+        }
+      }
+
+      function clearReply() {
+        document.getElementById('reply').textContent = 'Your AI response will appear here.';
+        document.getElementById('status').textContent = 'Ready.';
+      }
+    </script>
+  </body>
+</html>
