@@ -1,9 +1,13 @@
-FROM python:3.12-slim
+FROM mcr.microsoft.com/devcontainers/javascript-node:1-20-bookworm
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY . /app
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8000
+RUN npm install -g @nestjs/cli
 
-CMD ["python", "-m", "http.server", "8000", "--bind", "0.0.0.0"]
+CMD ["sleep", "infinity"]

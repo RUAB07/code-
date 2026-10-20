@@ -1,0 +1,39 @@
+{
+  "name": "AI Workflow Stack",
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  "service": "dev",
+  "runServices": [
+    "dev",
+    "n8n",
+    "ollama",
+    "postgres"
+  ],
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "forwardPorts": [5678, 11434, 5432],
+  "portsAttributes": {
+    "5678": {
+      "label": "n8n",
+      "onAutoForward": "openBrowser"
+    },
+    "11434": {
+      "label": "Ollama",
+      "onAutoForward": "notify"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    }
+  },
+  "remoteUser": "node"
+}
