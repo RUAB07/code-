@@ -3,152 +3,307 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Workflow Dashboard</title>
+    <title>AI Agency Agent</title>
     <style>
       :root {
-        --bg: #0f172a;
+        --bg: #0b1120;
         --panel: #111827;
         --card: #1e293b;
         --text: #e2e8f0;
         --muted: #94a3b8;
         --primary: #10b981;
-        --primary-dark: #0f766e;
+        --warn: #f59e0b;
+        --bad: #f87171;
         --border: #334155;
       }
       * { box-sizing: border-box; }
+      html, body { height: 100%; }
       body {
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(135deg, #020617, var(--bg));
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+        background: var(--bg);
         color: var(--text);
-        min-height: 100vh;
-        padding: 30px;
+        display: flex;
+        flex-direction: column;
       }
-      .container {
-        max-width: 900px;
-        margin: 0 auto;
+      header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+        flex-wrap: wrap;
       }
-      .panel {
-        background: rgba(17,24,39,0.95);
+      header h1 { font-size: 1.05rem; margin: 0; flex: 1; min-width: 140px; }
+      .pill {
+        font-size: 0.75rem;
+        padding: 3px 9px;
+        border-radius: 999px;
         border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 24px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-      }
-      h1 {
-        margin-top: 0;
-        font-size: 2rem;
-      }
-      .meta {
         color: var(--muted);
-        margin-bottom: 20px;
+        white-space: nowrap;
       }
+      .pill.ok { color: var(--primary); border-color: var(--primary); }
+      .pill.warn { color: var(--warn); border-color: var(--warn); }
+      .pill.bad { color: var(--bad); border-color: var(--bad); }
+      button {
+        font: inherit;
+        cursor: pointer;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        padding: 8px 12px;
+      }
+      button.primary { background: var(--primary); border-color: var(--primary); color: #04130f; font-weight: 700; }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      main { flex: 1; display: flex; min-height: 0; }
+      #chat-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+      #log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+      .msg { max-width: 760px; padding: 10px 14px; border-radius: 14px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+      .msg.user { align-self: flex-end; background: var(--primary); color: #04130f; }
+      .msg.agent { align-self: flex-start; background: var(--card); border: 1px solid var(--border); }
+      .msg.error { align-self: flex-start; background: #3b1219; border: 1px solid var(--bad); color: #fecaca; }
+      details.step { margin-top: 8px; font-size: 0.85rem; color: var(--muted); white-space: normal; }
+      details.step summary { cursor: pointer; }
+      details.step pre { margin: 6px 0 0; padding: 8px; background: #020617; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; color: #cbd5e1; }
+      #chips { display: flex; gap: 8px; padding: 0 14px 8px; flex-wrap: wrap; }
+      #chips button { font-size: 0.85rem; padding: 6px 10px; color: var(--muted); }
+      form { display: flex; gap: 8px; padding: 10px 14px 14px; border-top: 1px solid var(--border); background: var(--panel); }
       textarea {
-        width: 100%;
-        min-height: 140px;
-        resize: vertical;
+        flex: 1;
+        resize: none;
+        max-height: 140px;
+        min-height: 44px;
         border-radius: 12px;
         border: 1px solid var(--border);
         background: #020617;
         color: var(--text);
-        padding: 14px;
-        font-size: 1rem;
+        padding: 10px 12px;
+        font: inherit;
       }
-      .actions {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        margin-top: 16px;
-        flex-wrap: wrap;
-      }
-      button {
-        border: none;
-        padding: 12px 20px;
-        border-radius: 10px;
-        background: var(--primary);
-        color: #04130f;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      button.secondary {
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--text);
-      }
-      .reply {
-        margin-top: 22px;
-        background: #0b1220;
-        border: 1px solid var(--border);
-        padding: 18px;
-        border-radius: 12px;
-        white-space: pre-wrap;
-        line-height: 1.6;
-        color: #dbeafe;
-      }
-      .status {
-        color: var(--muted);
-        font-size: 0.95rem;
-        margin-top: 8px;
+      aside { width: 340px; border-left: 1px solid var(--border); background: var(--panel); padding: 14px; overflow-y: auto; }
+      aside h2 { font-size: 0.95rem; margin: 0 0 10px; }
+      .client { border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; background: var(--card); }
+      .client b { display: block; }
+      .client small { color: var(--muted); }
+      .auto { margin-top: 8px; font-size: 0.8rem; word-break: break-all; }
+      .auto code { color: #a7f3d0; }
+      .empty { color: var(--muted); font-size: 0.9rem; }
+      #drawer-btn { display: none; }
+      @media (max-width: 800px) {
+        aside { display: none; position: fixed; inset: 56px 0 0 0; width: auto; z-index: 5; border-left: none; }
+        aside.open { display: block; }
+        #drawer-btn { display: inline-block; }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <div class="panel">
-        <h1>AI Workflow Dashboard</h1>
-        <div class="meta">Prompt an LLM through n8n + Ollama, powered by Docker.</div>
+    <header>
+      <h1>AI Agency Agent</h1>
+      <span class="pill" id="pill-ollama">Ollama …</span>
+      <span class="pill" id="pill-n8n">n8n …</span>
+      <button id="drawer-btn" type="button">Clients</button>
+      <button id="reset-btn" type="button">New chat</button>
+    </header>
 
-        <textarea id="prompt">Explain how Docker helps developers and teams work faster.</textarea>
+    <main>
+      <section id="chat-col">
+        <div id="log" aria-live="polite"></div>
+        <div id="chips"></div>
+        <form id="form">
+          <textarea id="prompt" rows="1" placeholder="Likho... (e.g. Add a salon client called Rupa Beauty)"></textarea>
+          <button class="primary" id="send" type="submit">Send</button>
+        </form>
+      </section>
 
-        <div class="actions">
-          <button onclick="sendPrompt()">Ask AI</button>
-          <button class="secondary" onclick="clearReply()">Clear</button>
-        </div>
-
-        <div id="status" class="status">Ready.</div>
-        <div id="reply" class="reply">Your AI response will appear here.</div>
-      </div>
-    </div>
+      <aside id="panel">
+        <h2>Clients and automations</h2>
+        <div id="clients"><div class="empty">Loading…</div></div>
+      </aside>
+    </main>
 
     <script>
-      async function sendPrompt() {
-        const prompt = document.getElementById('prompt').value.trim();
-        const status = document.getElementById('status');
-        const reply = document.getElementById('reply');
+      const MODEL = {{ model|tojson }};
+      const log = document.getElementById('log');
+      const promptBox = document.getElementById('prompt');
+      const sendBtn = document.getElementById('send');
+      let history = [];
+      let busy = false;
 
-        if (!prompt) {
-          status.textContent = 'Please enter a prompt first.';
-          return;
+      const CHIPS = [
+        'What can you automate for a client?',
+        'Check n8n status',
+        'Show my clients',
+        'Add a salon client called Rupa Beauty in Savar. Open 10am-8pm, haircut 300 BDT.',
+        'Deploy an FAQ chatbot for client 1',
+      ];
+
+      function addMessage(kind, text, trace) {
+        const el = document.createElement('div');
+        el.className = 'msg ' + kind;
+        el.textContent = text;
+        if (trace && trace.length) {
+          trace.forEach((step) => {
+            const d = document.createElement('details');
+            d.className = 'step';
+            const s = document.createElement('summary');
+            s.textContent = 'Tool: ' + step.tool;
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify({ args: step.args, result: step.result }, null, 2);
+            d.append(s, pre);
+            el.appendChild(d);
+          });
         }
+        log.appendChild(el);
+        log.scrollTop = log.scrollHeight;
+        return el;
+      }
 
-        status.textContent = 'Sending to AI...';
-        reply.textContent = 'Thinking...';
+      function save() {
+        try { localStorage.setItem('agent-history', JSON.stringify(history)); } catch (e) {}
+      }
 
+      function greet() {
+        addMessage('agent', 'Hi! Ami tomar automation agency er AI agent. Client add korte, n8n e chatbot/automation deploy korte, ar test korte pari. Model: ' + MODEL + '. Ki korbo?');
+      }
+
+      function resetChat() {
+        history = [];
+        save();
+        log.textContent = '';
+        greet();
+      }
+
+      async function send(text) {
+        if (busy || !text.trim()) return;
+        busy = true;
+        sendBtn.disabled = true;
+        addMessage('user', text);
+        promptBox.value = '';
+        const thinking = addMessage('agent', 'Thinking… (CPU te model chalale ektu somoy lage)');
         try {
-          const response = await fetch('/api/chat', {
+          const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
+            body: JSON.stringify({ prompt: text, messages: history }),
           });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Request failed');
-          }
-
-          reply.textContent = data.reply || 'No response returned.';
-          status.textContent = 'Response received successfully.';
-        } catch (error) {
-          reply.textContent = 'Error: ' + error.message;
-          status.textContent = 'Request failed.';
+          const data = await res.json();
+          thinking.remove();
+          if (!res.ok) throw new Error(data.error || 'Request failed');
+          history = data.messages;
+          save();
+          addMessage('agent', data.reply, data.trace);
+          loadClients();
+        } catch (err) {
+          thinking.remove();
+          addMessage('error', 'Error: ' + err.message);
+        } finally {
+          busy = false;
+          sendBtn.disabled = false;
+          promptBox.focus();
         }
       }
 
-      function clearReply() {
-        document.getElementById('reply').textContent = 'Your AI response will appear here.';
-        document.getElementById('status').textContent = 'Ready.';
+      async function loadStatus() {
+        const set = (id, cls, text) => {
+          const el = document.getElementById(id);
+          el.className = 'pill ' + cls;
+          el.textContent = text;
+        };
+        try {
+          const s = await (await fetch('/api/status')).json();
+          if (!s.ollama.reachable) set('pill-ollama', 'bad', 'Ollama offline');
+          else if (!s.ollama.model_ready) set('pill-ollama', 'warn', 'Model not pulled');
+          else set('pill-ollama', 'ok', 'Ollama ready');
+
+          if (!s.n8n.n8n_reachable) set('pill-n8n', 'bad', 'n8n offline');
+          else if (!s.n8n.api_key_set) set('pill-n8n', 'warn', 'n8n: add API key');
+          else if (s.n8n.api_key_valid === false) set('pill-n8n', 'bad', 'n8n: key invalid');
+          else set('pill-n8n', 'ok', 'n8n ready');
+        } catch (e) {
+          set('pill-ollama', 'bad', 'Ollama ?');
+          set('pill-n8n', 'bad', 'n8n ?');
+        }
       }
+
+      async function loadClients() {
+        const box = document.getElementById('clients');
+        try {
+          const data = await (await fetch('/api/clients')).json();
+          box.textContent = '';
+          if (!data.clients.length) {
+            box.innerHTML = '<div class="empty">No clients yet. Tell the agent to add one.</div>';
+            return;
+          }
+          data.clients.forEach((c) => {
+            const el = document.createElement('div');
+            el.className = 'client';
+            const name = document.createElement('b');
+            name.textContent = '#' + c.id + ' ' + c.name;
+            const sub = document.createElement('small');
+            sub.textContent = c.business_type + (c.contact ? ' · ' + c.contact : '');
+            el.append(name, sub);
+            data.automations.filter((a) => a.client_id === c.id).forEach((a) => {
+              const row = document.createElement('div');
+              row.className = 'auto';
+              row.append(
+                document.createTextNode('#' + a.id + ' ' + a.kind + (a.active ? ' (on)' : ' (off)')),
+                document.createElement('br')
+              );
+              const code = document.createElement('code');
+              code.textContent = a.webhook_url;
+              row.appendChild(code);
+              el.appendChild(row);
+            });
+            box.appendChild(el);
+          });
+        } catch (e) {
+          box.textContent = 'Could not load clients.';
+        }
+      }
+
+      document.getElementById('form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        send(promptBox.value);
+      });
+      promptBox.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          send(promptBox.value);
+        }
+      });
+      promptBox.addEventListener('input', () => {
+        promptBox.style.height = 'auto';
+        promptBox.style.height = Math.min(promptBox.scrollHeight, 140) + 'px';
+      });
+      document.getElementById('reset-btn').addEventListener('click', resetChat);
+      document.getElementById('drawer-btn').addEventListener('click', () => {
+        document.getElementById('panel').classList.toggle('open');
+      });
+
+      const chips = document.getElementById('chips');
+      CHIPS.forEach((text) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = text.length > 34 ? text.slice(0, 32) + '…' : text;
+        b.title = text;
+        b.addEventListener('click', () => send(text));
+        chips.appendChild(b);
+      });
+
+      try {
+        const saved = JSON.parse(localStorage.getItem('agent-history') || '[]');
+        if (Array.isArray(saved) && saved.length) history = saved;
+      } catch (e) {}
+      greet();
+      if (history.length) {
+        addMessage('agent', 'Previous conversation memory loaded. Click "New chat" to clear it.');
+      }
+      loadStatus();
+      loadClients();
+      setInterval(loadStatus, 30000);
     </script>
   </body>
 </html>

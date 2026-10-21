@@ -6,32 +6,33 @@
   "service": "dev",
   "runServices": [
     "dev",
+    "postgres",
     "n8n",
     "ollama",
-    "postgres"
+    "ollama-pull",
+    "dashboard",
+    "nginx"
   ],
   "workspaceFolder": "/workspace",
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-azuretools.vscode-docker",
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "ms-azuretools.vscode-docker"
       ]
     }
   },
-  "forwardPorts": [5678, 11434, 5432],
+  "forwardPorts": [8080, 5678, 11434],
   "portsAttributes": {
+    "8080": {
+      "label": "AI Agency Agent (dashboard)",
+      "onAutoForward": "openBrowser"
+    },
     "5678": {
       "label": "n8n",
-      "onAutoForward": "openBrowser"
+      "onAutoForward": "notify"
     },
     "11434": {
       "label": "Ollama",
-      "onAutoForward": "notify"
-    },
-    "5432": {
-      "label": "PostgreSQL",
       "onAutoForward": "silent"
     }
   },

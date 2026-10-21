@@ -8,6 +8,4 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g @nestjs/cli
-
 CMD ["sleep", "infinity"]
