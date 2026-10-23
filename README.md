@@ -29,6 +29,18 @@ and answers with a polite fallback message if the model is down):
 | `review_reply` | drafts a polite reply to a Google review |
 | `lead_followup` | writes a short WhatsApp/SMS follow-up for a new lead |
 | `social_post` | writes a Facebook/Instagram caption (content upsell) |
+| `custom_assistant` | anything else: describe in plain words what it should do and know |
+
+### Visiting websites
+
+The agent has a `visit_website` tool. Give it a client's website and it reads the title, text and
+links, then uses those facts when it saves the client or writes the automation. Example:
+`Visit https://clientsite.com, add them as a client and deploy an FAQ chatbot using their hours and prices.`
+
+It is a plain page reader, not a full browser: it cannot log in, click, run JavaScript, or open
+pages that only render in JavaScript (many Facebook pages). It blocks localhost, the Docker network
+and other private addresses, so it cannot be pointed at n8n or Ollama. If a page cannot be read the
+agent should ask you for the facts instead of guessing.
 
 Every deployed automation is called the same way:
 
