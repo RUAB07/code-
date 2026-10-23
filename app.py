@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
 import os
 import requests
 
 app = Flask(__name__)
 
-# Environment-driven model/backend toggle.
+# Environment-driven Ollama backend strategy
 OLLAMA_MODE = os.getenv("OLLAMA_MODE", "cloud")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "https://ollama.com/api")
 OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "")
@@ -33,7 +33,7 @@ def chat():
         return jsonify({"error": "Prompt is required."}), 400
 
     try:
-        # Use cloud Ollama API securely from server-side only.
+        # Cloud Ollama mode: secure, server-side only
         if OLLAMA_MODE == "cloud":
             if not OLLAMA_API_KEY:
                 return jsonify({"error": "OLLAMA_API_KEY is missing."}), 500
@@ -63,7 +63,7 @@ def chat():
 
             return jsonify({"reply": reply})
 
-        # Local Ollama mode for Docker/Codespaces/VM setups.
+        # Local Ollama mode for Docker/Codespaces/VM development.
         response = requests.post(
             f"{OLLAMA_BASE_URL}/api/generate",
             json={
